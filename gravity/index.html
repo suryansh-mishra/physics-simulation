@@ -1,18 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>rphy - Simulation</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>physics - simulation</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="./rphy.js" defer></script>
-</head>
-<body class="relative" >
+    <script src="./script.js" defer></script>
+  </head>
+  <body class="relative">
     <div class="flex flex-col items-center h-[100dvh] justify-center">
-        <h1 class="font-semibold pb-1 text-black">Gravity</h1>
-        <div class="canvas-container">
-            <canvas height="720" width="1280" class="bg-black aspect-[16/9] w-full" id="canvas" />
-        </div>
+      <h1 class="font-semibold pb-1 text-black">Gravity</h1>
+      <div class="canvas-container">
+        <canvas
+          height="720"
+          width="1280"
+          class="bg-black aspect-[16/9] w-full max-h-[90dvh]"
+          id="canvas"
+        />
+      </div>
     </div>
-</body>
+  </body>
 </html>
