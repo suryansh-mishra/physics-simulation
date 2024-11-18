@@ -5,20 +5,21 @@
  */
 
 class Shape {
-  holdFPS = 0;
-  shouldHoldAtStop = false;
-
+  MAX_RADIUS = 100;
+  MIN_RADIUS = 5;
   static SHAPE_TYPES = {
     CIRCLE: 'CIRCLE',
     SQUARE: 'SQUARE',
   };
 
-  constructor(simulator, x, y, r, color) {
+  constructor(simulator, x, y, r, color, e) {
     // Handle boundaries
+    if (r < this.MIN_RADIUS || r > this.MAX_RADIUS) r = this.MIN_RADIUS;
     if (y < r) y = r;
     if (x < r) x = r;
     if (y + r > simulator.height) y = simulator.height - r;
     if (x + r > simulator.width) x = simulator.width - r;
+    if (e < 0 || e > 1) e = 0.9;
 
     this.initialY = y;
     this.x = x;
@@ -26,27 +27,38 @@ class Shape {
     this.dy = 0;
     this.r = r;
     this.color = color;
+    this.e = e;
     this.movement = Simulator.MOVEMENTS.DOWN;
   }
 
   update(simulator) {
+    if (this.movement === Simulator.MOVEMENTS.STOP) return;
     const a = simulator.gravity;
     const currentDy = this.dy;
     this.dy = currentDy + (a * simulator.units) / simulator.fps;
     const deltaY = (Math.pow(this.dy, 2) - Math.pow(currentDy, 2)) / (2 * a);
     this.y = this.y + deltaY;
+
     if (
       this.movement === Simulator.MOVEMENTS.DOWN &&
       this.y + this.r >= simulator.height
     ) {
-      this.dy = -this.dy;
+      this.dy = -(this.e * this.dy);
       this.y = simulator.height - this.r;
+      this.initialY = simulator.height - Math.pow(this.dy, 2) / (2 * a);
       this.movement = Simulator.MOVEMENTS.UP;
-    }
-    if (this.movement === Simulator.MOVEMENTS.UP && this.y <= this.initialY) {
+    } else if (
+      this.movement === Simulator.MOVEMENTS.UP &&
+      this.y <= this.initialY
+    ) {
       this.dy = 0;
       this.y = this.initialY;
       this.movement = Simulator.MOVEMENTS.DOWN;
+    }
+    if (this.initialY + this.r >= simulator.height) {
+      this.movement = Simulator.MOVEMENTS.STOP;
+      this.dy = 0;
+      this.y = simulator.height - this.r;
     }
   }
 
@@ -99,6 +111,7 @@ class Simulator {
     DOWN: 'DOWN',
     LEFT: 'LEFT',
     RIGHT: 'RIGHT',
+    STOP: 'STOP',
   };
 
   interval = undefined;
@@ -175,7 +188,8 @@ class Simulator {
         (this.lastMouseLocation.x - this.canvasOffsetX) * this.scaleX,
         (this.lastMouseLocation.y - this.canvasOffsetY) * this.scaleY,
         r,
-        currentColor
+        currentColor,
+        0.9
       )
     );
     this.mouseDownTimestamp = 0;
@@ -195,11 +209,18 @@ class Simulator {
     }
   };
 
+  animate = () => {
+    if (!this.isActive) return;
+    requestAnimationFrame(this.drawShapes);
+  };
+
   start = () => {
-    if (!this.interval) setInterval(this.drawShapes, 1000 / this.fps);
+    this.isActive = true;
+    if (!this.interval) setInterval(this.animate, 1000 / this.fps);
   };
 
   stop = () => {
+    this.isActive = false;
     if (this.interval) clearInterval(this.interval);
   };
 
